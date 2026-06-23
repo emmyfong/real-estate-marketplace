@@ -1,0 +1,8 @@
+# Local DynamoDB for development and tests. This stands in for the DynamoDB
+# table you will provision in your own AWS account for the live deploy.
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8000:8000"

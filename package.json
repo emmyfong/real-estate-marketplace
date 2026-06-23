@@ -1,0 +1,48 @@
+{
+  "name": "property-copilot-map-oa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "db:local": "tsx backend/scripts/create-local-table.ts",
+    "seed": "tsx backend/scripts/seed.ts",
+    "dev:api": "tsx backend/local-server.ts"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.658.0",
+    "@aws-sdk/lib-dynamodb": "^3.658.0",
+    "ngeohash": "^0.6.3",
+    "next": "^16.2.9",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/ngeohash": "^0.6.8",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.31.0",
+    "eslint-config-next": "^16.2.9",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.62.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "postcss": "^8.5.15",
+    "esbuild": "^0.28.1"
+  }
+}

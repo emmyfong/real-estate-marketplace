@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+.env
+.env*.local
+coverage
+npm-debug.log*
+.DS_Store
+
+# AWS CDK
+cdk.out
+*.tsbuildinfo
