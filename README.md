@@ -69,14 +69,27 @@ tests/          Vitest unit tests (geo math, filters, seed data)
 
 ## Running tests
 
+**Unit tests** (no database needed):
 ```bash
 npm test
 ```
 
-The suite covers the geohash helpers (`tests/geo.test.ts`), filter composition
-(`tests/filter.test.ts`), and the seed data set (`tests/seed-data.test.ts`).
-These are pure and need no database. Add tests for the geospatial query and any
-new logic you write.
+Covers geohash helpers (`tests/geo.test.ts`), filter composition
+(`tests/filter.test.ts`), seed data (`tests/seed-data.test.ts`), and component
+tests (`tests/ListingsPanel.test.tsx`, `tests/PropertyCard.test.tsx`).
+
+**Integration tests** (requires DynamoDB Local — `docker compose up -d` first):
+```bash
+npm run test:integration
+```
+
+Exercises the real data layer and router against DynamoDB Local
+(`tests/properties.integration.test.ts`, `tests/router.integration.test.ts`)
+
+**CI:** Both suites run automatically on every push and PR to `main` via GitHub
+Actions (`.github/workflows/ci.yml`), which also spins up a DynamoDB Local
+service container for the integration tests
+
 
 ## Deploying
 
