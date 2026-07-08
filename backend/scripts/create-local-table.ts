@@ -1,9 +1,6 @@
-import {
-  CreateTableCommand,
-  DynamoDBClient,
-  DescribeTableCommand
-} from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import nextEnv from "@next/env";
+import { ensurePropertiesTable } from "./create-table";
 
 // Creates the Properties table (and geo GSI) in DynamoDB Local for development.
 // The real table is created by the CDK stack (infra/) in your AWS account; this
@@ -24,38 +21,12 @@ const client = new DynamoDBClient({
 });
 
 async function main() {
-  try {
-    await client.send(new DescribeTableCommand({ TableName: TABLE_NAME }));
-    console.log(`Table "${TABLE_NAME}" already exists at ${ENDPOINT}.`);
-    return;
-  } catch {
-    // Table does not exist yet; create it below.
-  }
-
-  await client.send(
-    new CreateTableCommand({
-      TableName: TABLE_NAME,
-      BillingMode: "PAY_PER_REQUEST",
-      AttributeDefinitions: [
-        { AttributeName: "id", AttributeType: "S" },
-        { AttributeName: "geohashPrefix", AttributeType: "S" },
-        { AttributeName: "geohash", AttributeType: "S" }
-      ],
-      KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
-      GlobalSecondaryIndexes: [
-        {
-          IndexName: "geo-index",
-          KeySchema: [
-            { AttributeName: "geohashPrefix", KeyType: "HASH" },
-            { AttributeName: "geohash", KeyType: "RANGE" }
-          ],
-          Projection: { ProjectionType: "ALL" }
-        }
-      ]
-    })
+  const created = await ensurePropertiesTable(client, TABLE_NAME);
+  console.log(
+    created
+      ? `Created table "${TABLE_NAME}" with geo-index at ${ENDPOINT}.`
+      : `Table "${TABLE_NAME}" already exists at ${ENDPOINT}.`
   );
-
-  console.log(`Created table "${TABLE_NAME}" with geo-index at ${ENDPOINT}.`);
 }
 
 main().catch((error) => {

@@ -1,5 +1,6 @@
 import { filterProperties, parseFilter } from "./filter";
-import { getPropertyById, listAllProperties } from "./properties";
+import type { BoundingBox } from "./geo";
+import { getPropertyById, queryByBoundingBox } from "./properties";
 
 export type ApiRequest = {
   method: string;
@@ -11,6 +12,36 @@ export type ApiResponse = {
   statusCode: number;
   body: unknown;
 };
+
+/**
+ * Default viewport: Metro Vancouver, covering all four seed cities. Used when the
+ * client has not reported a map viewport yet, so `/properties` always answers
+ * from a bounded geo query and never scans the whole table.
+ */
+const DEFAULT_BBOX: BoundingBox = {
+  minLat: 49.05,
+  minLng: -123.25,
+  maxLat: 49.35,
+  maxLng: -122.75
+};
+
+/**
+ * Parse a `bbox=minLat,minLng,maxLat,maxLng` query param. Falls back to
+ * DEFAULT_BBOX on missing, malformed, or inverted input — a bad param should
+ * never 500 the endpoint (lenient, matching parseFilter).
+ */
+function parseBbox(raw: string | undefined): BoundingBox {
+  if (!raw) return DEFAULT_BBOX;
+  const parts = raw.split(",").map(Number);
+  if (parts.length !== 4 || parts.some((value) => !Number.isFinite(value))) {
+    return DEFAULT_BBOX;
+  }
+  const [minLat, minLng, maxLat, maxLng] = parts;
+  if (minLat > maxLat || minLng > maxLng) {
+    return DEFAULT_BBOX;
+  }
+  return { minLat, minLng, maxLat, maxLng };
+}
 
 /**
  * Framework-agnostic request router shared by the Lambda handler (production)
@@ -36,15 +67,15 @@ export async function route(req: ApiRequest): Promise<ApiResponse> {
     return { statusCode: 200, body: { property } };
   }
 
-  // GET /properties
+  // GET /properties?bbox=minLat,minLng,maxLat,maxLng&minRent&maxRent&bedrooms&bathrooms&propertyType
   //
-  // BASELINE: scans the whole table, applies attribute filters server-side, and
-  // returns the result. There is no viewport/bounding-box support yet — add it
-  // here (read `bbox` from the query, call your geospatial query) so the map
-  // does not request every listing on the planet.
+  // The bbox narrows to the map viewport via the geo-index GSI first, then the
+  // attribute filters run in-memory on that small result set. This keeps the
+  // query server-side and off the full table (no Scan).
   if (req.path === "/properties") {
-    const all = await listAllProperties();
-    const properties = filterProperties(all, parseFilter(req.query));
+    const box = parseBbox(req.query.bbox);
+    const inViewport = await queryByBoundingBox(box);
+    const properties = filterProperties(inViewport, parseFilter(req.query));
     return { statusCode: 200, body: { properties, count: properties.length } };
   }
 

@@ -28,5 +28,17 @@ export type PropertyFilter = {
   minRent?: number;
   maxRent?: number;
   bedrooms?: number;
+  bathrooms?: number;
   propertyType?: PropertyType;
+  q?: string;
+};
+
+/** Map viewport bounds sent to the server for a geospatial query. Mirrors the
+ * backend BoundingBox (backend/src/geo.ts); kept as an independent copy so the
+ * frontend doesn't import backend code (and pull ngeohash into the bundle). */
+export type BoundingBox = {
+  minLat: number;
+  minLng: number;
+  maxLat: number;
+  maxLng: number;
 };

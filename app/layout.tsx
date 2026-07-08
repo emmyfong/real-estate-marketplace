@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import "./globals.css";
+import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Property Copilot — Map Browser",
-  description: "Map-based rental browser scaffold for Metro Vancouver"
+  description: "Map-based rental browser for Metro Vancouver"
 };
 
 export default function RootLayout({
@@ -15,15 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="border-b bg-white">
-          <nav className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 text-sm">
-            <Link className="font-semibold" href="/">
-              Property Copilot
-            </Link>
-            <Link href="/browse">Browse</Link>
-          </nav>
-        </header>
-        <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+        <Navbar />
+        <main>{children}</main>
       </body>
     </html>
   );

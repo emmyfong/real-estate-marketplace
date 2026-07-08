@@ -73,16 +73,42 @@ export function generateProperties(count = 50): SeedProperty[] {
 
   for (let i = 0; i < count; i += 1) {
     const city = CITIES[i % CITIES.length];
-    const propertyType = PROPERTY_TYPES[Math.floor(rng() * PROPERTY_TYPES.length)];
-
     // Scatter within roughly +/- 3km of the city centre.
     const lat = Number((city.lat + (rng() - 0.5) * 0.06).toFixed(6));
     const lng = Number((city.lng + (rng() - 0.5) * 0.06).toFixed(6));
 
-    const bedrooms = Math.floor(rng() * 5); // 0 (studio) .. 4
-    const bathrooms = 1 + Math.floor(rng() * 3); // 1 .. 3
-    const squareFeet = 400 + bedrooms * 250 + Math.floor(rng() * 300);
-    const rent = 1500 + bedrooms * 600 + Math.floor(rng() * 1200);
+    // Pick type first then derive coherent rooms / size / rent for it
+    const propertyType = PROPERTY_TYPES[Math.floor(rng() * PROPERTY_TYPES.length)];
+    let bedrooms: number;
+    let bathrooms: number;
+    let squareFeet: number;
+    let rent: number;
+    switch (propertyType) {
+      case "apartment":
+        bedrooms = Math.floor(rng() * 3); // studio .. 2
+        bathrooms = 1;
+        squareFeet = 420 + bedrooms * 220 + Math.floor(rng() * 200);
+        rent = 1500 + bedrooms * 500 + Math.floor(rng() * 600);
+        break;
+      case "condo":
+        bedrooms = Math.floor(rng() * 3); // studio .. 2
+        bathrooms = 1 + Math.floor(rng() * 2); // 1 .. 2
+        squareFeet = 500 + bedrooms * 250 + Math.floor(rng() * 250);
+        rent = 1800 + bedrooms * 550 + Math.floor(rng() * 700);
+        break;
+      case "townhouse":
+        bedrooms = 2 + Math.floor(rng() * 2); // 2 .. 3
+        bathrooms = 2 + Math.floor(rng() * 2); // 2 .. 3
+        squareFeet = 950 + bedrooms * 250 + Math.floor(rng() * 300);
+        rent = 2600 + bedrooms * 400 + Math.floor(rng() * 800);
+        break;
+      default: // house
+        bedrooms = 3 + Math.floor(rng() * 2); // 3 .. 4
+        bathrooms = 2 + Math.floor(rng() * 3); // 2 .. 4
+        squareFeet = 1500 + bedrooms * 300 + Math.floor(rng() * 400);
+        rent = 3200 + bedrooms * 500 + Math.floor(rng() * 1200);
+        break;
+    }
     const streetNumber = 100 + Math.floor(rng() * 8900);
     const street = city.streets[Math.floor(rng() * city.streets.length)];
 

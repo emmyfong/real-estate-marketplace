@@ -10,6 +10,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      # DynamoDB Local for the integration tests. The default image command
+      # listens on 8000; the integration tests provision their own isolated
+      # table, so no seeding step is needed here.
+      dynamodb-local:
+        image: amazon/dynamodb-local:latest
+        ports:
+          - 8000:8000
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,11 +32,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Unit tests (geo math, filters, seed data) are pure and need no database.
-      # Tests that exercise DynamoDB directly should run against DynamoDB Local
-      # (e.g. an `amazon/dynamodb-local` service container) if you add them.
-      - name: Test
+      # Pure unit tests (geo math, filters, seed data) — no database needed.
+      - name: Unit tests
         run: npm test
+
+      # Integration tests exercise the real data layer and router against the
+      # DynamoDB Local service container above.
+      - name: Integration tests
+        run: npm run test:integration
+        env:
+          DYNAMODB_ENDPOINT: http://localhost:8000
 
       - name: Build
         run: npm run build

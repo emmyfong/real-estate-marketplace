@@ -47,6 +47,19 @@ describe("filterProperties", () => {
     expect(both.every((p) => p.rent <= 3000 && p.bathrooms >= 2)).toBe(true);
   });
 
+  test("keyword search matches city (case-insensitive)", () => {
+    const result = filterProperties(PROPERTIES, { q: "surrey" });
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((p) => p.city === "Surrey")).toBe(true);
+  });
+
+  test("keyword search composes with rent", () => {
+    const surrey = filterProperties(PROPERTIES, { q: "surrey" });
+    const both = filterProperties(PROPERTIES, { q: "surrey", maxRent: 3000 });
+    expect(both.length).toBeLessThanOrEqual(surrey.length);
+    expect(both.every((p) => p.city === "Surrey" && p.rent <= 3000)).toBe(true);
+  });
+
   test("no filters returns everything", () => {
     expect(filterProperties(PROPERTIES, {})).toHaveLength(PROPERTIES.length);
   });
@@ -68,5 +81,10 @@ describe("parseFilter", () => {
   test("ignores invalid property type and absent fields", () => {
     expect(parseFilter({ propertyType: "castle" })).toEqual({});
     expect(parseFilter({})).toEqual({});
+  });
+
+  test("trims a keyword and drops it when empty", () => {
+    expect(parseFilter({ q: "  Robson  " })).toEqual({ q: "Robson" });
+    expect(parseFilter({ q: "   " })).toEqual({});
   });
 });

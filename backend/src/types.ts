@@ -43,4 +43,5 @@ export type PropertyFilter = {
   bedrooms?: number; // minimum number of bedrooms
   bathrooms?: number; // minimum number of bathrooms
   propertyType?: PropertyType;
+  q?: string; // keyword search over title / street / city
 };

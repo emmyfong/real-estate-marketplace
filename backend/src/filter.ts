@@ -1,13 +1,7 @@
 import type { Property, PropertyFilter } from "./types";
 
 /**
- * Apply renter filters to a list of properties. Pure and side-effect free so it
- * is easy to unit test and reuse on either side of the wire.
- *
- * Filters compose: every provided constraint must hold for an item to pass.
- * This is the baseline filter set (rent range, minimum bedrooms, property
- * type). Extend it with additional dimensions (bathrooms, square footage,
- * keyword) as you build out filtering.
+ * Apply renter filters to a list of properties
  */
 export function filterProperties(properties: Property[], filter: PropertyFilter): Property[] {
   return properties.filter((property) => {
@@ -25,6 +19,13 @@ export function filterProperties(properties: Property[], filter: PropertyFilter)
     }
     if (filter.propertyType !== undefined && property.propertyType !== filter.propertyType) {
       return false;
+    }
+    if (filter.q !== undefined) {
+      const needle = filter.q.toLowerCase();
+      const haystack = `${property.title} ${property.street} ${property.city}`.toLowerCase();
+      if (!haystack.includes(needle)) {
+        return false;
+      }
     }
     return true;
   });
@@ -61,6 +62,13 @@ export function parseFilter(query: Record<string, string | undefined>): Property
     query.propertyType === "townhouse"
   ) {
     filter.propertyType = query.propertyType;
+  }
+
+  if (query.q !== undefined) {
+    const q = query.q.trim();
+    if (q.length > 0) {
+      filter.q = q;
+    }
   }
 
   return filter;

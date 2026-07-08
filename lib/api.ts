@@ -1,4 +1,4 @@
-import type { Property, PropertyFilter } from "./types";
+import type { BoundingBox, Property, PropertyFilter } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
@@ -15,18 +15,31 @@ async function apiGet<T>(path: string): Promise<T> {
   return body as T;
 }
 
-function toQueryString(filter: PropertyFilter): string {
+function buildQuery(filter: PropertyFilter, bbox?: BoundingBox): string {
   const params = new URLSearchParams();
   if (filter.minRent !== undefined) params.set("minRent", String(filter.minRent));
   if (filter.maxRent !== undefined) params.set("maxRent", String(filter.maxRent));
   if (filter.bedrooms !== undefined) params.set("bedrooms", String(filter.bedrooms));
+  if (filter.bathrooms !== undefined) params.set("bathrooms", String(filter.bathrooms));
   if (filter.propertyType !== undefined) params.set("propertyType", filter.propertyType);
+  if (filter.q !== undefined) params.set("q", filter.q);
+  if (bbox) {
+    params.set("bbox", `${bbox.minLat},${bbox.minLng},${bbox.maxLat},${bbox.maxLng}`);
+  }
   const query = params.toString();
   return query ? `?${query}` : "";
 }
 
-export async function fetchProperties(filter: PropertyFilter = {}): Promise<Property[]> {
-  const data = await apiGet<{ properties: Property[] }>(`/properties${toQueryString(filter)}`);
+/**
+ * Fetch listings, optionally narrowed by renter filters and the map viewport.
+ * `bbox` is omitted until the map reports one — the server then applies its own
+ * Metro Vancouver default, so the first paint is still a bounded geo query.
+ */
+export async function fetchProperties(
+  filter: PropertyFilter = {},
+  bbox?: BoundingBox
+): Promise<Property[]> {
+  const data = await apiGet<{ properties: Property[] }>(`/properties${buildQuery(filter, bbox)}`);
   return data.properties;
 }
 
